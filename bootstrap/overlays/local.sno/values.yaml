@@ -1,0 +1,59 @@
+default:
+  app:
+    enabled: true
+    enableAutoSync: true
+    autoSyncPrune: false
+    project: cluster-config
+    labels:
+      app-source: local.sno
+      repo: cluster-config
+    destination:
+      namespace: openshift-gitops
+      server: https://kubernetes.default.svc
+    source:
+      repoURL: https://github.com/gnunn-gitops/cluster-config.git
+      targetRevision: HEAD
+
+projects:
+
+  demo:
+    description: Project for ad-hoc demos and testing
+    sourceRepos:
+    - "*"
+    destinations: |
+      - namespace: '*'
+        server: https://kubernetes.default.svc
+    extraFields: |
+      clusterResourceWhitelist:
+      - group: '*'
+        kind: '*'
+
+  cluster-config:
+    annotations:
+      notifications.argoproj.io/subscribe.on-sync-failed.slack: cluster-gitops
+      notifications.argoproj.io/subscribe.on-health-degraded.slack: cluster-gitops
+    description: Project for overall cluster configuration
+    namespace: openshift-gitops
+    sourceRepos:
+    - https://github.com/gnunn-gitops/cluster-config
+    - https://github.com/redhat-cop/gitops-catalog
+    - https://github.com/gnunn-gitops/acm-hub-bootstrap
+    - https://github.com/codieman/cluster-config
+    destinations: |
+      - namespace: '*'
+        server: https://kubernetes.default.svc
+    extraFields: |
+      clusterResourceWhitelist:
+      - group: '*'
+        kind: '*'
+
+
+applications:
+
+  cost-management:
+    annotations:
+      argocd.argoproj.io/sync-wave: '21'
+    destination:
+      namespace: costmanagement-metrics-operator
+    source:
+      path: clusters/overlays/local.sno/components/cost-management-operator
