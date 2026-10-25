@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: cluster-config
+spec:
+  description: Project for overall cluster configuration
+  sourceRepos:
+  - https://github.com/codieman/cluster-config
+  - https://github.com/codieman/cluster-config.git
+  destinations:
+  - namespace: '*'
+    server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'

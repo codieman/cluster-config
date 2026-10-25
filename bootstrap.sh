@@ -6,5 +6,5 @@ else
     echo "Configuring cluster ${OVERLAY}"
 fi
 
-oc project openshift-gitops
-kustomize build bootstrap/overlays/${OVERLAY} --enable-helm | oc apply -f -
+oc apply -n openshift-gitops -k bootstrap/overlays/${OVERLAY}
+oc apply -n openshift-gitops -f bootstrap/root-app.yaml
