@@ -1,0 +1,193 @@
+# Read-only access for AI assistants, written as an explicit allowlist.
+#
+# The built-in view/cluster-reader roles are not used because they aggregate,
+# so any new operator CRD (including ones that embed credentials) would be
+# readable automatically. Here every group and resource is listed by name and
+# only get/list/watch are granted.
+#
+# Deliberately NOT granted (they expose credentials or allow code execution):
+#   secrets, configmaps, pods/log            (see overlays/extended for the last two)
+#   pods/exec, pods/attach, pods/portforward, */proxy, nodes/proxy
+#   serviceaccounts/token, impersonate, any create/update/patch/delete
+#   oauth.openshift.io (OAuthClients carry client secrets), user.openshift.io
+#   rbac / authorization.openshift.io, security.openshift.io (SCCs)
+#   machineconfigs (can embed files), proxies (can embed proxy credentials)
+#   alertmanagerconfigs (can embed receiver credentials), external-secrets,
+#   generators.external-secrets.io, sealedsecrets, virtualmachineexports,
+#   metal3 baremetalhosts (BMC endpoints)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ai-cluster-reader
+rules:
+- apiGroups: [""]
+  resources:
+  - endpoints
+  - events
+  - limitranges
+  - namespaces
+  - nodes
+  - persistentvolumeclaims
+  - persistentvolumes
+  - pods
+  - replicationcontrollers
+  - resourcequotas
+  - serviceaccounts
+  - services
+  verbs: [get, list, watch]
+- apiGroups: [apps]
+  resources: [controllerrevisions, daemonsets, deployments, replicasets, statefulsets]
+  verbs: [get, list, watch]
+- apiGroups: [batch]
+  resources: [cronjobs, jobs]
+  verbs: [get, list, watch]
+- apiGroups: [autoscaling]
+  resources: [horizontalpodautoscalers]
+  verbs: [get, list, watch]
+- apiGroups: [policy]
+  resources: [poddisruptionbudgets]
+  verbs: [get, list, watch]
+- apiGroups: [discovery.k8s.io]
+  resources: [endpointslices]
+  verbs: [get, list, watch]
+- apiGroups: [events.k8s.io]
+  resources: [events]
+  verbs: [get, list, watch]
+- apiGroups: [networking.k8s.io]
+  resources: [ingressclasses, ingresses, networkpolicies]
+  verbs: [get, list, watch]
+- apiGroups: [storage.k8s.io]
+  resources: [csidrivers, csinodes, storageclasses, volumeattachments]
+  verbs: [get, list, watch]
+- apiGroups: [snapshot.storage.k8s.io]
+  resources: [volumesnapshotclasses, volumesnapshotcontents, volumesnapshots]
+  verbs: [get, list, watch]
+- apiGroups: [metrics.k8s.io]
+  resources: [nodes, pods]
+  verbs: [get, list]
+- apiGroups: [apiextensions.k8s.io]
+  resources: [customresourcedefinitions]
+  verbs: [get, list, watch]
+- apiGroups: [apiregistration.k8s.io]
+  resources: [apiservices]
+  verbs: [get, list, watch]
+- apiGroups: [admissionregistration.k8s.io]
+  resources: [mutatingwebhookconfigurations, validatingwebhookconfigurations]
+  verbs: [get, list, watch]
+
+# OpenShift platform
+- apiGroups: [config.openshift.io]
+  resources:
+  - apiservers
+  - clusteroperators
+  - clusterversions
+  - consoles
+  - dnses
+  - featuregates
+  - images
+  - infrastructures
+  - ingresses
+  - networks
+  - nodes
+  - operatorhubs
+  - schedulers
+  verbs: [get, list, watch]
+- apiGroups: [operator.openshift.io]
+  resources:
+  - certmanagers
+  - clustercsidrivers
+  - consoles
+  - dnses
+  - etcds
+  - ingresscontrollers
+  - kubeapiservers
+  - kubecontrollermanagers
+  - kubeschedulers
+  - networks
+  - openshiftapiservers
+  - storages
+  verbs: [get, list, watch]
+- apiGroups: [route.openshift.io]
+  resources: [routes]
+  verbs: [get, list, watch]
+- apiGroups: [project.openshift.io]
+  resources: [projects]
+  verbs: [get, list, watch]
+- apiGroups: [image.openshift.io]
+  resources: [imagestreams, imagestreamtags]
+  verbs: [get, list, watch]
+- apiGroups: [machineconfiguration.openshift.io]
+  resources: [machineconfignodes, machineconfigpools]
+  verbs: [get, list, watch]
+- apiGroups: [monitoring.coreos.com]
+  resources: [podmonitors, prometheusrules, servicemonitors]
+  verbs: [get, list, watch]
+
+# Operator Lifecycle Manager
+- apiGroups: [operators.coreos.com]
+  resources: [catalogsources, clusterserviceversions, installplans, operatorgroups, subscriptions]
+  verbs: [get, list, watch]
+- apiGroups: [packages.operators.coreos.com]
+  resources: [packagemanifests]
+  verbs: [get, list, watch]
+
+# Argo CD
+- apiGroups: [argoproj.io]
+  resources: [applications, applicationsets, appprojects]
+  verbs: [get, list, watch]
+
+# cert-manager
+- apiGroups: [cert-manager.io]
+  resources: [certificaterequests, certificates, clusterissuers, issuers]
+  verbs: [get, list, watch]
+- apiGroups: [acme.cert-manager.io]
+  resources: [challenges, orders]
+  verbs: [get, list, watch]
+
+# LVM Storage
+- apiGroups: [lvm.topolvm.io]
+  resources: [lvmclusters, lvmvolumegroupnodestatuses, lvmvolumegroups]
+  verbs: [get, list, watch]
+- apiGroups: [topolvm.io]
+  resources: [logicalvolumes]
+  verbs: [get, list, watch]
+
+# OpenShift Virtualization
+- apiGroups: [hco.kubevirt.io]
+  resources: [hyperconvergeds]
+  verbs: [get, list, watch]
+- apiGroups: [kubevirt.io]
+  resources: [kubevirts, virtualmachineinstancemigrations, virtualmachineinstances, virtualmachines]
+  verbs: [get, list, watch]
+- apiGroups: [cdi.kubevirt.io]
+  resources: [cdis, dataimportcrons, datasources, datavolumes, storageprofiles]
+  verbs: [get, list, watch]
+- apiGroups: [instancetype.kubevirt.io]
+  resources:
+  - virtualmachineclusterinstancetypes
+  - virtualmachineclusterpreferences
+  - virtualmachineinstancetypes
+  - virtualmachinepreferences
+  verbs: [get, list, watch]
+- apiGroups: [snapshot.kubevirt.io]
+  resources: [virtualmachinerestores, virtualmachinesnapshotcontents, virtualmachinesnapshots]
+  verbs: [get, list, watch]
+- apiGroups: [migrations.kubevirt.io]
+  resources: [migrationpolicies]
+  verbs: [get, list, watch]
+
+# Networking (NMState, Multus, OVN)
+- apiGroups: [nmstate.io]
+  resources: [nmstates, nodenetworkconfigurationenactments, nodenetworkconfigurationpolicies, nodenetworkstates]
+  verbs: [get, list, watch]
+- apiGroups: [k8s.cni.cncf.io]
+  resources: [network-attachment-definitions]
+  verbs: [get, list, watch]
+- apiGroups: [k8s.ovn.org]
+  resources: [clusteruserdefinednetworks, userdefinednetworks]
+  verbs: [get, list, watch]
+
+# Migration Toolkit for Virtualization
+- apiGroups: [forklift.konveyor.io]
+  resources: [migrations, networkmaps, plans, providers, storagemaps]
+  verbs: [get, list, watch]
