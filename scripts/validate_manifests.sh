@@ -17,7 +17,7 @@ Where:
 which kustomize && KUSTOMIZE_CMD="kustomize build"
 
 KUSTOMIZE_CMD="${KUSTOMIZE_CMD:-oc kustomize}"
-KUSTOMIZE_OPTIONS="--enable-helm"
+KUSTOMIZE_OPTIONS=""
 IGNORE_MISSING_SCHEMAS="--ignore-missing-schemas"
 SCHEMA_LOCATION="${DIR}/openshift-json-schema"
 KUSTOMIZE_DIRS="${DIR}"

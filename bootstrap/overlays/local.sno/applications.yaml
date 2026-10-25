@@ -1,0 +1,62 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: lvm-operator
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: cluster-config
+  destination:
+    namespace: openshift-storage
+    server: https://kubernetes.default.svc
+  source:
+    path: components/lvm-operator/base
+    repoURL: https://github.com/codieman/cluster-config.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: cluster-config
+  destination:
+    namespace: cert-manager-operator
+    server: https://kubernetes.default.svc
+  source:
+    path: components/cert-manager-operator/aggregate/overlays/letsencrypt
+    repoURL: https://github.com/codieman/cluster-config.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: certificates
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: cluster-config
+  destination:
+    namespace: openshift-gitops
+    server: https://kubernetes.default.svc
+  source:
+    path: components/certificates/base
+    repoURL: https://github.com/codieman/cluster-config.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      selfHeal: true

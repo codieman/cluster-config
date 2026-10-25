@@ -9,9 +9,10 @@ OpenShift Virtualization, NMState and MTV are managed from the
 
 # Structure
 
-* _bootstrap/overlays/local.sno_ - the "app of app" that generates the Argo CD `cluster-config` AppProject and one
-  Application per component, using the [argocd-app-of-app](https://github.com/gnunn-gitops/helm-charts) helm chart
-  from `values.yaml`.
+* _bootstrap/root-app.yaml_ - the `cluster-config` root Application (app of apps), which deploys
+  `bootstrap/overlays/local.sno`.
+* _bootstrap/overlays/local.sno_ - the `cluster-config` AppProject and one Argo CD Application per component, as
+  plain kustomize. To add a component, add an Application to `applications.yaml`.
 * _components_ - the kustomize manifests for each component:
 
 | Component | Path | Contents |
@@ -35,10 +36,12 @@ Application never deletes the underlying storage, operators or certificates.
 ./bootstrap.sh local.sno
 ```
 
+This applies the overlay and the root Application. After that, Argo CD keeps everything in sync from git.
+
 # Validation
 
 ```
 ./scripts/validate_manifests.sh
 ```
 
-Requires kustomize and helm v3 (kustomize's helm support does not work with helm v4).
+Requires kustomize (or `oc`); helm is not used.
