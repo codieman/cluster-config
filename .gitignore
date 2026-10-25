@@ -6,3 +6,4 @@ google-secret.yaml
 *-private.yml
 charts
 qnap-tls
+.claude/settings.local.json

@@ -60,3 +60,25 @@ spec:
   syncPolicy:
     automated:
       selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ai-access
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: cluster-config
+  destination:
+    namespace: ai-access
+    server: https://kubernetes.default.svc
+  source:
+    path: components/ai-access/base
+    repoURL: https://github.com/codieman/cluster-config.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
